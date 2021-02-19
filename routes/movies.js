@@ -27,6 +27,7 @@ moviesRouter.post('/movies', celebrate({
       }
       return url;
     }),
+    movieId: Joi.string().alphanum().length(24).hex(),
     nameRU: Joi.string().required(),
     nameEN: Joi.string().required(),
     thumbnail: Joi.string().required().custom((url) => {
