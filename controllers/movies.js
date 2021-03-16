@@ -28,16 +28,21 @@ module.exports.addMovie = (req, res, next) => {
 };
 
 module.exports.deleteMovie = (req, res, next) => {
-  Movie.findById(req.params._id)
+  const owner = req.user._id;
+  const { movieId } = req.params;
+  Movie.findOne({ movieId })
     .then((movie) => {
       if (!movie) {
         throw new NotFoundError('Данные не найдены');
       }
-      if (movie.owner.toString() !== req.user._id) {
-        throw new ForbiddenError('Вы не можете удалить чужую карточку');
-      }
-      Movie.findByIdAndRemove(req.params._id)
-        .then((deletedMovie) => res.send(deletedMovie));
+      return movie;
     })
+    .then((movie) => {
+      if (String(movie.owner) !== owner) {
+        throw new ForbiddenError('Недостаточно прав');
+      }
+      return movie.remove();
+    })
+    .then((movie) => res.send(movie))
     .catch(next);
 };
